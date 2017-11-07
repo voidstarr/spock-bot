@@ -4,7 +4,7 @@ const querystring = require('querystring');
 const util = require('util');
 const fs = require('fs');
 const markov = require('./markov');
-const config = require('config.json');
+const config = require('./config.json');
 var m = markov(4);
 var s = fs.createReadStream(__dirname + '/' + config.inputTextFile);
 
