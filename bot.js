@@ -9,7 +9,7 @@ var m = markov(4);
 var s = fs.createReadStream(__dirname + '/' + config.inputTextFile);
 
 const adminUserId = config.adminUser;
-const INFO_TEXT = 'Bot created by voidstar.\nPatched together with https://github.com/substack/node-markov and the discord.js libraries.\nSpock\'s lines obtained using this https://github.com/voidstarr/spock-lines\n';
+const INFO_TEXT = 'Bot created by voidstar.\nPatched together with https://github.com/substack/node-markov and the discord.js libraries.\nSpock\'s lines obtained using this https://github.com/voidstarr/spock-lines\nBot source: https://bitbucket.org/voidstarr/spock-bot/';
 
 
 client.on('ready', () => {
