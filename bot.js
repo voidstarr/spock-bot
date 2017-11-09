@@ -5,7 +5,7 @@ const util = require('util');
 const fs = require('fs');
 const markov = require('./markov');
 const config = require('./config.json');
-var m = markov(4);
+var m = markov(3);
 var s = fs.createReadStream(__dirname + '/' + config.inputTextFile);
 
 const adminUserId = config.adminUser;
@@ -45,7 +45,9 @@ client.on('error', msg => {
 
 m.seed(s, function () {
     console.log('markov loaded');
+    doLogin();
 });
 
-
-client.login(config.token);
+function doLogin() {
+    client.login(config.token);
+}
