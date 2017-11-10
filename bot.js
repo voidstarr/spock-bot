@@ -3,6 +3,7 @@ const client = new Discord.Client();
 const querystring = require('querystring');
 const util = require('util');
 const fs = require('fs');
+const axios = require('axios');
 const markov = require('./markov');
 const config = require('./config.json');
 var m = markov(3);
@@ -35,6 +36,10 @@ client.on('message', msg => {
         process.exit(0);
     } else if (msg.content == '~!info') {
         msg.reply(INFO_TEXT);
+    } else if (msg.content == '~!inspire') {
+        axios.get('http://inspirobot.me/api?generate=true')
+            .then(resp => msg.reply(resp.data))
+            .catch(err => console.log(err));
     }
 });
 

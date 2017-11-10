@@ -4,6 +4,7 @@
   "description": "",
   "main": "bot.js",
   "dependencies": {
+    "axios": "^0.17.0",
     "deck": "^0.0.4",
     "discord.js": "^11.2.1",
     "hashish": "0.0.4",
