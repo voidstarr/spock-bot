@@ -12,6 +12,8 @@ var s = fs.createReadStream(__dirname + '/' + config.inputTextFile);
 const adminUserId = config.adminUser;
 const INFO_TEXT = 'Bot created by voidstar.\nPatched together with https://github.com/substack/node-markov and the discord.js libraries.\nSpock\'s lines obtained using this https://github.com/voidstarr/spock-lines\nBot source: https://bitbucket.org/voidstarr/spock-bot/';
 
+const tableFlip = '(╯°□°）╯︵ ┻━┻';
+
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -40,6 +42,8 @@ client.on('message', msg => {
         axios.get('http://inspirobot.me/api?generate=true')
             .then(resp => msg.reply(resp.data))
             .catch(err => console.log(err));
+    } else if (msg.content == tableFlip) {
+        msg.reply('┬─┬ノ( º _ ºノ)');
     }
 });
 
