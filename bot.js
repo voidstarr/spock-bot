@@ -43,7 +43,7 @@ client.on('message', msg => {
             .then(resp => msg.reply(resp.data))
             .catch(err => console.log(err));
     } else if (msg.content == tableFlip) {
-        msg.reply('┬─┬ノ( º _ ºノ)');
+        msg.reply('┬─┬ノ( º _ ºノ)\nJoy be with you. Peace and contentment.');
     } else if (msg.content == '~!help') {
         msg.reply('Don\'t ask to ask; just ask.');
     }
