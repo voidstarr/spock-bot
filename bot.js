@@ -44,6 +44,8 @@ client.on('message', msg => {
             .catch(err => console.log(err));
     } else if (msg.content == tableFlip) {
         msg.reply('┬─┬ノ( º _ ºノ)');
+    } else if (msg.content == '~!help') {
+        msg.reply('Don\'t ask to ask; just ask.');
     }
 });
 
