@@ -3,7 +3,7 @@
 ## Installation
 ```
 git clone https://bitbucket.org/voidstarr/spock-bot.git
-cd spock-bot.git
+cd spock-bot
 npm install
 ```
 
