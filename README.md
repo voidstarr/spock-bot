@@ -23,11 +23,11 @@ db
 ```
 The create-tables.sql file only creates tables, you'll have to create a database. I'll flesh this out eventually.
 
-*`Poorly curated`* logs are created in the logs directory.
+*Poorly curated* logs are created in the logs directory.
 
 Functionality of this bot:
--Snarky responses in response to an @mention
--~!info gives some informational text
--@mention followed by google <some string> returns a snarky comment and a lmgtfy link
--~!inspire grabs a random image from inspirobot
--other snarky goodies
+* Snarky responses in response to an @mention
+* ~!info gives some informational text
+* @mention followed by google <some string> returns a snarky comment and a lmgtfy link
+* ~!inspire grabs a random image from inspirobot
+* other snarky goodies
