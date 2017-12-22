@@ -8,6 +8,27 @@ const fs = require('fs');
 const axios = require('axios');
 const markov = require('./markov');
 const config = require('./config.json');
+
+var log4js = require('log4js');
+log4js.configure({
+    appenders: {
+        everything: {
+            type: 'file',
+            filename: 'logs/spock-bot.log',
+            maxLogSize: 10485760,
+            backups: 3,
+            compress: true
+        }
+    },
+    categories: {
+        default: {
+            appenders: ['everything'],
+            level: 'all'
+        }
+    }
+});
+
+var logger = log4js.getLogger();
 var m = markov(3);
 var s = fs.createReadStream(__dirname + '/' + config.inputTextFile);
 var db = require('knex')({
@@ -32,13 +53,13 @@ const tableFlip = '(╯°□°）╯︵ ┻━┻';
 
 
 client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+    logger.debug(`Logged in as ${client.user.tag}!`);
 });
 
 client.on('message', msg => {
     if (msg.mentions.users.exists('id', client.user.id)) {
         var removedMention = msg.content.replace(Discord.MessageMentions.USERS_PATTERN, '').trim();
-        console.log('pinged by ' + msg.author.username + ' -- ' + removedMention);
+        logger.debug('pinged by ' + msg.author.username + ' -- ' + removedMention);
         var res = '';
         if (removedMention.toLowerCase().startsWith('google')) {
             var ggl = removedMention.substr(removedMention.indexOf(' ') + 1);
@@ -53,7 +74,7 @@ client.on('message', msg => {
     } else if (msg.author.id == adminUserId && msg.content == '~!die') {
         db.destroy();
         client.destroy();
-        console.log('logged out by ' + msg.author.id);
+        logger.debug('logged out by ' + msg.author.id);
         process.exit(0);
     } else if (msg.content == '~!info') {
         msg.reply(INFO_TEXT);
@@ -71,13 +92,13 @@ client.on('message', msg => {
 });
 
 client.on('error', msg => {
-    console.log(msg);
+    logger.error(msg);
     db.destroy();
     process.exit(1);
 });
 
 m.seed(s, function() {
-    console.log('markov loaded');
+    logger.debug('markov loaded');
     doLogin();
 });
 
@@ -90,22 +111,23 @@ function logMessage(msg) {
         created_at: msg.createdAt,
         body: msg.content
     };
+
     if (msg.channel instanceof Discord.TextChannel) {
         //console.log('msg type guild message');
         db('channel_messages').insert(messageObj).then(data => {
             //console.log('db then: %s', data);
         }).catch(e => {
-            console.log('db err: %s', e);
+            logger.error('db err: %s', e);
         });
     } else if (msg.channel instanceof Discord.DMChannel || msg.channel instanceof Discord.GroupDMChannel) {
         //console.log('msg type dm');
         db('direct_messages').insert(messageObj).then(data => {
             //console.log('db then: %s', data);
         }).catch(e => {
-            console.log('db err: %s', e);
+            logger.error('db err: %s', e);
         });
     } else {
-        console.log('something went wrong. could not determine type of message channel');
+        logger.debug('something went wrong. could not determine type of message channel');
     }
 }
 
