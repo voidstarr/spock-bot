@@ -26,6 +26,7 @@ The create-tables.sql file only creates tables, you'll have to create a database
 *Poorly curated* logs are created in the logs directory.
 
 Functionality of this bot:
+
 * Snarky responses in response to an @mention
 * ~!info gives some informational text
 * @mention followed by google <some string> returns a snarky comment and a lmgtfy link
