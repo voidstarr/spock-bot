@@ -8,7 +8,9 @@
     "deck": "^0.0.4",
     "discord.js": "^11.2.1",
     "hashish": "0.0.4",
-    "lazy": "^1.0.11"
+    "knex": "^0.14.2",
+    "lazy": "^1.0.11",
+    "mariasql": "^0.2.6"
   },
   "devDependencies": {},
   "scripts": {
