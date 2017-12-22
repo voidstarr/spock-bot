@@ -6,7 +6,7 @@ CREATE TABLE channel_messages (
     server BIGINT UNSIGNED,
     channel BIGINT UNSIGNED,
     author BIGINT UNSIGNED,
-    created_at DATE,
+    created_at DATETIME,
     body VARCHAR(2000),
     PRIMARY KEY ( db_id )
 );
@@ -16,7 +16,7 @@ CREATE TABLE direct_messages (
     id BIGINT UNSIGNED,
     channel BIGINT UNSIGNED,
     author BIGINT UNSIGNED,
-    created_at DATE,
+    created_at DATETIME,
     body VARCHAR(2000),
     PRIMARY KEY ( db_id )
 );

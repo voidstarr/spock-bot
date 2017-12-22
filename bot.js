@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const querystring = require('querystring');
