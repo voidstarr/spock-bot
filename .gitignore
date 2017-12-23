@@ -3,4 +3,5 @@ node_modules/
 *.swp
 spock.txt
 config.json
+*.ignore
 logs/

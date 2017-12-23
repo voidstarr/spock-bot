@@ -1,6 +1,6 @@
-USE spock_bot;
+CREATE DATABASE IF NOT EXISTS spock_bot;
 
-CREATE TABLE channel_messages (
+CREATE TABLE IF NOT EXISTS spock_bot.channel_messages (
     db_id INT NOT NULL AUTO_INCREMENT,
     id BIGINT UNSIGNED,
     server BIGINT UNSIGNED,
@@ -9,9 +9,11 @@ CREATE TABLE channel_messages (
     created_at DATETIME,
     body VARCHAR(2000),
     PRIMARY KEY ( db_id )
-);
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_bin;
 
-CREATE TABLE direct_messages (
+CREATE TABLE IF NOT EXISTS spock_bot.direct_messages (
     db_id INT NOT NULL AUTO_INCREMENT,
     id BIGINT UNSIGNED,
     channel BIGINT UNSIGNED,
@@ -19,4 +21,6 @@ CREATE TABLE direct_messages (
     created_at DATETIME,
     body VARCHAR(2000),
     PRIMARY KEY ( db_id )
-);
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_bin;

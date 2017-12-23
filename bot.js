@@ -37,7 +37,8 @@ var db = require('knex')({
         host: config.db_host,
         user: config.db_user,
         password: config.db_pass,
-        db: config.db
+        db: config.db,
+        charset: 'utf8mb4'
     },
     pool: {
         min: 0,
@@ -71,7 +72,7 @@ client.on('message', msg => {
             res = m.respond(removedMention).join(' ');
         }
         msg.reply(res);
-    } else if (msg.author.id == adminUserId && msg.content == '~!die') {
+    } else if (msg.author.id == adminUserId && msg.content == '~!kill') {
         db.destroy();
         client.destroy();
         logger.debug('logged out by ' + msg.author.id);
@@ -103,29 +104,41 @@ m.seed(s, function() {
 });
 
 function logMessage(msg) {
+    
+    logger.debug(msg.toString());
+    
+    var msgBody = msg.content;
+
+    if (!msg.content) {
+        logger.debug("msg.content empty; checking for attatchments etc");
+        logger.debug("msg.attachments.size = ".concat(msg.attachments.size));
+        msg.attachments.forEach((attach, id) => {
+            logger.debug("msg.attachments: ".concat(id," ",attach.url));
+            msgBody += (" " + attach.url);
+        });
+    }
+
+    logger.debug(msgBody);
+
     var messageObj = {
         id: msg.id,
         channel: msg.channel.id,
         server: msg.guild.id,
         author: msg.author.id,
         created_at: msg.createdAt,
-        body: msg.content
+        body: msgBody
     };
 
     if (msg.channel instanceof Discord.TextChannel) {
         //console.log('msg type guild message');
         db('channel_messages').insert(messageObj).then(data => {
             //console.log('db then: %s', data);
-        }).catch(e => {
-            logger.error('db err: %s', e);
-        });
+        }).catch(logger.error);
     } else if (msg.channel instanceof Discord.DMChannel || msg.channel instanceof Discord.GroupDMChannel) {
         //console.log('msg type dm');
         db('direct_messages').insert(messageObj).then(data => {
             //console.log('db then: %s', data);
-        }).catch(e => {
-            logger.error('db err: %s', e);
-        });
+        }).catch(logger.error);
     } else {
         logger.debug('something went wrong. could not determine type of message channel');
     }
