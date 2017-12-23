@@ -109,7 +109,7 @@ function logMessage(msg) {
     
     var msgBody = msg.content;
 
-    if (!msg.content) {
+    if (msg.attachments.size > 0) {
         logger.debug("msg.content empty; checking for attatchments etc");
         logger.debug("msg.attachments.size = ".concat(msg.attachments.size));
         msg.attachments.forEach((attach, id) => {
