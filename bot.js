@@ -72,7 +72,7 @@ client.on('message', msg => {
             res = m.respond(removedMention).join(' ');
         }
         msg.reply(res);
-    } else if (msg.author.id == adminUserId && msg.content == '~!kill') {
+    } else if (msg.author.id == adminUserId && msg.content == '~!die') { // TODO: find a better way to do this
         db.destroy();
         client.destroy();
         logger.debug('logged out by ' + msg.author.id);
