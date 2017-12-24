@@ -47,18 +47,22 @@ var db = require('knex')({
 });
 
 
+const regex_m = /\<[^\b\s]+/g; // removes mentions
+const regex_w = /s^\s+|\s+$|\s+(?=\s)/g; // remove duplicate and trailing spaces
+
 const adminUserId = config.adminUser;
 const INFO_TEXT = 'Bot created by voidstar.\nPatched together with https://github.com/substack/node-markov and the discord.js libraries.\nSpock\'s lines obtained using this https://github.com/voidstarr/spock-lines\nBot source: https://bitbucket.org/voidstarr/spock-bot/';
 
 const tableFlip = '(╯°□°）╯︵ ┻━┻';
 
-var skipLogs = 0;
-
 client.on('ready', () => {
+    client.user.setGame("with your heart");
     logger.debug(`Logged in as ${client.user.tag}!`);
 });
 
 client.on('message', msg => {
+    var args = msg.content.split(" ");
+
     if (msg.mentions.users.exists('id', client.user.id)) {
         var removedMention = msg.content.replace(Discord.MessageMentions.USERS_PATTERN, '').trim();
         logger.debug('pinged by ' + msg.author.username + ' -- ' + removedMention);
@@ -73,40 +77,50 @@ client.on('message', msg => {
             res = m.respond(removedMention).join(' ');
         }
         msg.reply(res);
-    } else if (msg.author.id == adminUserId && msg.content == '~!die') { // TODO: find a better way to do this
+        logMessage(msg);
+    } else if (msg.author.id == adminUserId && args[0] == '~!die') { // TODO: find a better way to do this
         db.destroy();
         client.destroy();
         logger.debug('logged out by ' + msg.author.id);
         process.exit(0);
-    } else if (msg.content == '~!info') {
-        msg.reply(INFO_TEXT);
-    } else if (msg.content == '~!inspire') {
+    } else if (args[0] == '~!info') {
+        msg.channel.send(INFO_TEXT);
+    } else if (args[0] == '~!inspire') {
         axios.get('http://inspirobot.me/api?generate=true')
             .then(resp => msg.reply(resp.data))
             .catch(err => console.log(err));
-    } else if (msg.content == tableFlip) {
+    } else if (args[0] == tableFlip) {
         msg.reply('┬─┬ノ( º _ ºノ)\nJoy be with you. Peace and contentment.');
-    } else if (msg.content == '~!help') {
+    } else if (args[0] == '~!help') {
         msg.reply('Don\'t ask to ask; just ask.');
-    } /*else if (msg.content == '~!randmsg') {
-        skipLogs = 2;
-        db('channel_messages')
-        .where('server',msg.guild.id)
-        .select('body')
-        .orderByRaw('rand()')
-        .limit(1)
-        .then(resp => {
-            logger.debug('getRandomMessage: ');
-            logger.debug(resp[0].body);
-            const regex_m = /\<[^\b\s]+/g; // removes mentions
-            const regex_w = /s^\s+|\s+$|\s+(?=\s)/g; // remove duplicate and trailing spaces
-            var content = resp[0].body.replace(regex_m,'').replace(regex_w,'').trim();
-            msg.reply(content);
-        })
-        .catch(logger.error);
-    }*/
+    } else if (args[0] == '~!randmsg') {
+        logger.debug('~!randmsg cmd: ');
+        logger.debug('randmsg args' + args);
+        
+        var usr = "%";
 
-    logMessage(msg);
+        if (msg.mentions.members.firstKey()) {
+            usr = msg.mentions.members.firstKey(); 
+        }
+
+        logger.debug('randmsg user search: ' + usr);
+
+        db('channel_messages')
+            .where('server', msg.guild.id)
+            .where('author', 'like', usr)
+            .select('body', 'db_id')
+            .orderByRaw('rand()')
+            .limit(1)
+            .then(resp => {
+                logger.debug('get random message raw db response:');
+                logger.debug(resp);
+                msg.channel.send("db_id(" + resp[0].db_id + "): " + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim(), {reply:null});
+            })
+            .catch(err => {logger.error(err)});
+    } else {
+        logMessage(msg);
+    }
+
 });
 
 client.on('error', msg => {
@@ -115,27 +129,30 @@ client.on('error', msg => {
     process.exit(1);
 });
 
+client.on('warn', wrn => {logger.warn(wrn)});
+
+
 m.seed(s, function() {
     logger.debug('markov loaded');
     doLogin();
 });
 
+
 function logMessage(msg) {
-    
-    if (skipLogs > 0) {
-        skipLogs--;
+
+    if (msg.author.id == client.user.id) {
         return;
     }
 
     logger.debug(msg.toString());
-    
+
     var msgBody = msg.content;
 
     if (msg.attachments.size > 0) {
         logger.debug("msg.content empty; checking for attatchments etc");
         logger.debug("msg.attachments.size = ".concat(msg.attachments.size));
         msg.attachments.forEach((attach, id) => {
-            logger.debug("msg.attachments: ".concat(id," ",attach.url));
+            logger.debug("msg.attachments: ".concat(id, " ", attach.url));
             msgBody += (" " + attach.url);
         });
     }
@@ -153,14 +170,16 @@ function logMessage(msg) {
 
     if (msg.channel instanceof Discord.TextChannel) {
         //console.log('msg type guild message');
-        db('channel_messages').insert(messageObj).then(data => {
-            //console.log('db then: %s', data);
-        }).catch(logger.error);
+        db('channel_messages')
+            .insert(messageObj)
+            .then()
+            .catch(err => {logger.error(err)});
     } else if (msg.channel instanceof Discord.DMChannel || msg.channel instanceof Discord.GroupDMChannel) {
         //console.log('msg type dm');
-        db('direct_messages').insert(messageObj).then(data => {
-            //console.log('db then: %s', data);
-        }).catch(logger.error);
+        db('direct_messages')
+            .insert(messageObj)
+            .then()
+            .catch(err => {logger.error(err)});
     } else {
         logger.debug('something went wrong. could not determine type of message channel');
     }
@@ -169,3 +188,4 @@ function logMessage(msg) {
 function doLogin() {
     client.login(config.token);
 }
+
