@@ -52,6 +52,7 @@ const INFO_TEXT = 'Bot created by voidstar.\nPatched together with https://githu
 
 const tableFlip = '(╯°□°）╯︵ ┻━┻';
 
+var skipLogs = 0;
 
 client.on('ready', () => {
     logger.debug(`Logged in as ${client.user.tag}!`);
@@ -87,7 +88,23 @@ client.on('message', msg => {
         msg.reply('┬─┬ノ( º _ ºノ)\nJoy be with you. Peace and contentment.');
     } else if (msg.content == '~!help') {
         msg.reply('Don\'t ask to ask; just ask.');
-    }
+    } /*else if (msg.content == '~!randmsg') {
+        skipLogs = 2;
+        db('channel_messages')
+        .where('server',msg.guild.id)
+        .select('body')
+        .orderByRaw('rand()')
+        .limit(1)
+        .then(resp => {
+            logger.debug('getRandomMessage: ');
+            logger.debug(resp[0].body);
+            const regex_m = /\<[^\b\s]+/g; // removes mentions
+            const regex_w = /s^\s+|\s+$|\s+(?=\s)/g; // remove duplicate and trailing spaces
+            var content = resp[0].body.replace(regex_m,'').replace(regex_w,'').trim();
+            msg.reply(content);
+        })
+        .catch(logger.error);
+    }*/
 
     logMessage(msg);
 });
@@ -105,6 +122,11 @@ m.seed(s, function() {
 
 function logMessage(msg) {
     
+    if (skipLogs > 0) {
+        skipLogs--;
+        return;
+    }
+
     logger.debug(msg.toString());
     
     var msgBody = msg.content;
