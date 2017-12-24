@@ -108,13 +108,13 @@ client.on('message', msg => {
         db('channel_messages')
             .where('server', msg.guild.id)
             .where('author', 'like', usr)
-            .select('body', 'db_id')
+            .select('body', 'db_id','author')
             .orderByRaw('rand()')
             .limit(1)
             .then(resp => {
                 logger.debug('get random message raw db response:');
                 logger.debug(resp);
-                msg.channel.send("db_id(" + resp[0].db_id + "): " + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim(), {reply:null});
+                msg.channel.send("db_id(" + resp[0].db_id +'),author('+msg.guild.members.get(resp[0].author).user.username + "): " + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
             })
             .catch(err => {logger.error(err)});
     } else {
