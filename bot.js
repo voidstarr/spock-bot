@@ -89,7 +89,7 @@ client.on('message', msg => {
         axios.get('http://inspirobot.me/api?generate=true')
             .then(resp => msg.reply(resp.data))
             .catch(err => console.log(err));
-    } else if (args[0] == tableFlip) {
+    } else if (msg.content == tableFlip) {
         msg.reply('┬─┬ノ( º _ ºノ)\nJoy be with you. Peace and contentment.');
     } else if (args[0] == '~!help') {
         msg.reply('Don\'t ask to ask; just ask.');
