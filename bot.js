@@ -132,7 +132,7 @@ client.on('message', msg => {
                     msg.channel.send('db_id(' + resp[0].db_id + '),author(' + msg.guild.members.get(resp[0].author).user.username + 
                                      '): ' + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
                 } else {
-                    msg.channel.send('Invalid db_id.');
+                    msg.channel.send('Invalid db_id. \:shrug:');
                 }
             })
             .catch(err => {logger.error(err)});
