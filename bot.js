@@ -104,11 +104,13 @@ client.on('message', msg => {
 
         var db_id = "%";
         var author = "%";
+        var order_by = "db_id";
 
         if (msg.mentions.members.firstKey()) {
             author = msg.mentions.members.firstKey();
+            order_by = 'rand()';
         } else if (args[1] == 'rand' || args[1] == 'random') {
-            
+            order_by = 'rand()';
         } else if (isFinite(args[1]) && !isNaN(args[1])) {
             db_id = args[1]
         } else {
@@ -121,6 +123,7 @@ client.on('message', msg => {
             .where('db_id', 'like', db_id)
             .where('author', 'like', author)
             .select('body', 'author', 'db_id')
+            .orderByRaw(order_by + ' asc')
             .limit(1)
             .then(resp => {
                 logger.debug('~!db resp:');
