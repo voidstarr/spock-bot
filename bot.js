@@ -88,33 +88,49 @@ client.on('message', msg => {
     } else if (args[0] == '~!inspire') {
         axios.get('http://inspirobot.me/api?generate=true')
             .then(resp => msg.reply(resp.data))
-            .catch(err => console.log(err));
+            .catch(err => logger.error(err));
     } else if (msg.content == tableFlip) {
         msg.reply('┬─┬ノ( º _ ºノ)\nJoy be with you. Peace and contentment.');
     } else if (args[0] == '~!help') {
         msg.reply('Don\'t ask to ask; just ask.');
-    } else if (args[0] == '~!randmsg') {
-        logger.debug('~!randmsg cmd: ');
-        logger.debug('randmsg args' + args);
+    } else if (args[0] == '~!db' && args.length == 2) {
+        const cmd_usage = 'USAGE:\n' +
+                            '~!db rand\n' +
+                            '~!db <ID>\n' +
+                            '~!db @mention';
         
-        var usr = "%";
+        
+        logger.debug('~!db command: ' + args);
+
+        var db_id = "%";
+        var author = "%";
 
         if (msg.mentions.members.firstKey()) {
-            usr = msg.mentions.members.firstKey(); 
+            author = msg.mentions.members.firstKey();
+        } else if (args[1] == 'rand' || args[1] == 'random') {
+            
+        } else if (isFinite(args[1]) && !isNaN(args[1])) {
+            db_id = args[1]
+        } else {
+            msg.channel.send(cmd_usage);
+            return;
         }
-
-        logger.debug('randmsg user search: ' + usr);
-
+        
         db('channel_messages')
             .where('server', msg.guild.id)
-            .where('author', 'like', usr)
-            .select('body', 'db_id','author')
-            .orderByRaw('rand()')
+            .where('db_id', 'like', db_id)
+            .where('author', 'like', author)
+            .select('body', 'author', 'db_id')
             .limit(1)
             .then(resp => {
-                logger.debug('get random message raw db response:');
-                logger.debug(resp);
-                msg.channel.send("db_id(" + resp[0].db_id +'),author('+msg.guild.members.get(resp[0].author).user.username + "): " + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
+                logger.debug('~!db resp:');
+                logger.debug(resp + " len: " + resp.length);
+                if (resp.length > 0) {
+                    msg.channel.send('db_id(' + resp[0].db_id + '),author(' + msg.guild.members.get(resp[0].author).user.username + 
+                                     '): ' + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
+                } else {
+                    msg.channel.send('Invalid db_id.');
+                }
             })
             .catch(err => {logger.error(err)});
     } else {
