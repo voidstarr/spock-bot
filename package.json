@@ -11,7 +11,9 @@
     "knex": "^0.14.2",
     "lazy": "^1.0.11",
     "log4js": "^2.4.1",
-    "mariasql": "^0.2.6"
+    "mariasql": "^0.2.6",
+    "moment": "^2.20.1",
+    "node-schedule": "^1.2.5"
   },
   "devDependencies": {},
   "scripts": {

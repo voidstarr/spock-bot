@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict';
+
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const querystring = require('querystring');
@@ -8,6 +10,8 @@ const fs = require('fs');
 const axios = require('axios');
 const markov = require('./markov');
 const config = require('./config.json');
+const schedule = require('node-schedule');
+const moment = require('moment');
 
 var log4js = require('log4js');
 log4js.configure({
@@ -46,6 +50,10 @@ var db = require('knex')({
     }
 });
 
+var scheduleJobsAtMidnight = null;
+var scheduledJobs = [];
+
+const DEBUG = process.env.DEBUG || false;
 
 const regex_m = /\<[^\b\s]+/g; // removes mentions
 const regex_w = /s^\s+|\s+$|\s+(?=\s)/g; // remove duplicate and trailing spaces
@@ -65,7 +73,7 @@ client.on('message', msg => {
 
     if (msg.mentions.users.exists('id', client.user.id)) {
         var removedMention = msg.content.replace(Discord.MessageMentions.USERS_PATTERN, '').trim();
-        logger.debug('pinged by ' + msg.author.username + ' -- ' + removedMention);
+        logger.debug(`pinged by ${msg.author.username} -- ${removedMention}`);
         var res = '';
         if (removedMention.toLowerCase().startsWith('google')) {
             var ggl = removedMention.substr(removedMention.indexOf(' ') + 1);
@@ -81,7 +89,7 @@ client.on('message', msg => {
     } else if (msg.author.id == adminUserId && args[0] == '~!die') { // TODO: find a better way to do this
         db.destroy();
         client.destroy();
-        logger.debug('logged out by ' + msg.author.id);
+        logger.debug(`logged out by ${msg.author.username}`);
         process.exit(0);
     } else if (args[0] == '~!info') {
         msg.channel.send(INFO_TEXT);
@@ -100,7 +108,7 @@ client.on('message', msg => {
                             '~!db @mention';
         
         
-        logger.debug('~!db command: ' + args);
+        logger.debug(`~!db command: ${args}`);
 
         var db_id = "%";
         var author = "%";
@@ -123,19 +131,25 @@ client.on('message', msg => {
             .where('db_id', 'like', db_id)
             .where('author', 'like', author)
             .select('body', 'author', 'db_id')
-            .orderByRaw(order_by + ' asc')
+            .orderByRaw(`${order_by} asc`)
             .limit(1)
             .then(resp => {
                 logger.debug('~!db resp:');
-                logger.debug(resp + " len: " + resp.length);
+                logger.debug(`${resp} len: ${resp.length}`);
                 if (resp.length > 0) {
-                    msg.channel.send('db_id(' + resp[0].db_id + '),author(' + msg.guild.members.get(resp[0].author).user.username + 
-                                     '): ' + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
+                    msg.channel.send(`db_id(${resp[0].db_id}), author(${msg.guild.members.get(resp[0].author).user.username}): ${resp[0].body.replace(regex_m, '').replace(regex_w, '').trim()}`);
                 } else {
                     msg.channel.send('Invalid db_id. \:shrug:');
                 }
             })
             .catch(err => {logger.error(err)});
+    } else if(args[0] == '~!remindme' && args.length > 3) {
+        // args[1] time quantity
+        // args[2] time unit
+        addReminder(args[1], args[2], args.splice(3, args.length-1).join(' '), msg.author, msg.channel, msg.guild);
+        logger.debug(`add reminder: ${msg.content}`);
+    } else if (args[0] == '~!testloadjobs') {
+        loadTodaysJobs();
     } else {
         logMessage(msg);
     }
@@ -144,21 +158,53 @@ client.on('message', msg => {
 
 client.on('error', msg => {
     logger.error(msg);
-    db.destroy();
-    process.exit(1);
 });
 
 client.on('warn', wrn => {logger.warn(wrn)});
 
-
-m.seed(s, function() {
-    logger.debug('markov loaded');
+if (!DEBUG) {
+    m.seed(s, function() {
+        logger.debug('markov loaded');
+        doLogin();
+    });
+} else {
+    loadTodaysJobs();
     doLogin();
-});
+}
 
+function loadTodaysJobs() {
+    db('reminders')
+        .select('channel', 'author', 'server', 'remind_at')
+        .where('');
+    // TODO: cancel jobs that exist in the past 
+    //          loop over scheduledJobs if now.diff(job)
+    //              job.cancel(false);
+    //              remove from array
+    // fetch jobs from db for today's date
+    // load into scheduledJobs array
+}
+
+function addReminder(timeQuantity, timeUnit, messageBody, user, channel, guild) {
+    var now = moment(),
+        dateToRemind = moment(now).add(Number.parseInt(timeQuantity, 10), timeUnit);
+
+    logger.debug(`now(${now}) dateToRemind(${dateToRemind}) diff(${now.diff(dateToRemind)})`);
+
+    if(now.diff(dateToRemind) != 0) {
+        logger.debug(`addReminder: yay`);
+        // TODO: add job to db if dateToRemind does is not today
+        
+        // dateToRemind.toDate()
+
+        // add job to node-scheduler else
+
+    } else {
+        logger.debug(`now(${now}) == dateToRemind(${dateToRemind})`);
+        channel.send(`Fix your syntax ${user}.`);
+    }
+}
 
 function logMessage(msg) {
-
     if (msg.author.id == client.user.id) {
         return;
     }
@@ -169,14 +215,13 @@ function logMessage(msg) {
 
     if (msg.attachments.size > 0) {
         logger.debug("msg.content empty; checking for attatchments etc");
-        logger.debug("msg.attachments.size = ".concat(msg.attachments.size));
+        logger.debug(`msg.attachments.size = ${msg.attachments.size}`);
         msg.attachments.forEach((attach, id) => {
-            logger.debug("msg.attachments: ".concat(id, " ", attach.url));
-            msgBody += (" " + attach.url);
+            // TODO: test these alterations
+            logger.debug(`msg.attachments: ${id} ${attach.url}`);
+            msgBody += ` ${attach.url}`;
         });
     }
-
-    logger.debug(msgBody);
 
     var messageObj = {
         id: msg.id,
@@ -207,4 +252,3 @@ function logMessage(msg) {
 function doLogin() {
     client.login(config.token);
 }
-
