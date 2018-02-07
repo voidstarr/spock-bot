@@ -51,7 +51,7 @@ const regex_m = /\<[^\b\s]+/g; // removes mentions
 const regex_w = /s^\s+|\s+$|\s+(?=\s)/g; // remove duplicate and trailing spaces
 
 const adminUserId = config.adminUser;
-const INFO_TEXT = 'Bot created by voidstar.\nPatched together with https://github.com/substack/node-markov and the discord.js libraries.\nSpock\'s lines obtained using this https://github.com/voidstarr/spock-lines\nBot source: https://bitbucket.org/voidstarr/spock-bot/';
+const INFO_TEXT = 'Bot created by voidstar.\nPatched together with https://github.com/substack/node-markov and the discord.js libraries.\nSpock\'s lines obtained using this https://github.com/voidstarr/spock-lines\nBot source: https://github.com/voidstarr/spock-bot/';
 
 const tableFlip = '(╯°□°）╯︵ ┻━┻';
 
