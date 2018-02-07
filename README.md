@@ -2,7 +2,7 @@
 (with room for the kitchen sink)
 ## Installation
 ```
-git clone https://bitbucket.org/voidstarr/spock-bot.git
+git clone https://github.com/voidstarr/spock-bot.git
 cd spock-bot
 npm install
 ```
