@@ -95,11 +95,11 @@ client.on('message', msg => {
         msg.reply('Don\'t ask to ask; just ask.');
     } else if (args[0] == '~!db' && args.length == 2) {
         const cmd_usage = 'USAGE:\n' +
-                            '~!db rand\n' +
-                            '~!db <ID>\n' +
-                            '~!db @mention';
-        
-        
+            '~!db rand\n' +
+            '~!db <ID>\n' +
+            '~!db @mention';
+
+
         logger.debug('~!db command: ' + args);
 
         var db_id = "%";
@@ -117,7 +117,7 @@ client.on('message', msg => {
             msg.channel.send(cmd_usage);
             return;
         }
-        
+
         db('channel_messages')
             .where('server', msg.guild.id)
             .where('db_id', 'like', db_id)
@@ -129,13 +129,22 @@ client.on('message', msg => {
                 logger.debug('~!db resp:');
                 logger.debug(resp + " len: " + resp.length);
                 if (resp.length > 0) {
-                    msg.channel.send('db_id(' + resp[0].db_id + '),author(' + msg.guild.members.get(resp[0].author).user.username + 
-                                     '): ' + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
+                    var resp_author = msg.guild.members.get(resp[0].author); // .user.username
+
+                    if (resp_author === undefined) {
+                        resp_author = resp[0].author;
+                    } else {
+                        resp_author = resp_author.user.username;
+                    }
+                    msg.channel.send('db_id(' + resp[0].db_id + '),author(' + resp_author + 
+                    '): ' + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
                 } else {
                     msg.channel.send('Invalid db_id. \:shrug:');
                 }
             })
-            .catch(err => {logger.error(err)});
+            .catch(err => {
+                logger.error(err)
+            });
     } else {
         logMessage(msg);
     }
@@ -148,7 +157,9 @@ client.on('error', msg => {
     process.exit(1);
 });
 
-client.on('warn', wrn => {logger.warn(wrn)});
+client.on('warn', wrn => {
+    logger.warn(wrn)
+});
 
 
 m.seed(s, function() {
@@ -192,13 +203,17 @@ function logMessage(msg) {
         db('channel_messages')
             .insert(messageObj)
             .then()
-            .catch(err => {logger.error(err)});
+            .catch(err => {
+                logger.error(err)
+            });
     } else if (msg.channel instanceof Discord.DMChannel || msg.channel instanceof Discord.GroupDMChannel) {
         //console.log('msg type dm');
         db('direct_messages')
             .insert(messageObj)
             .then()
-            .catch(err => {logger.error(err)});
+            .catch(err => {
+                logger.error(err)
+            });
     } else {
         logger.debug('something went wrong. could not determine type of message channel');
     }
@@ -207,4 +222,3 @@ function logMessage(msg) {
 function doLogin() {
     client.login(config.token);
 }
-
