@@ -97,8 +97,8 @@ client.on('message', msg => {
         const cmd_usage = 'USAGE:\n' +
             '~!db rand\n' +
             '~!db <ID>\n' +
-            '~!db @mention';
-
+            '~!db @mention\n' +
+            '~!db count';
 
         logger.debug('~!db command: ' + args);
 
@@ -106,7 +106,20 @@ client.on('message', msg => {
         var author = "%";
         var order_by = "db_id";
 
-        if (msg.mentions.members.firstKey()) {
+        if (args[1] == 'count') {
+            db('channel_messages')
+                .count('db_id as a')
+                .where('server', msg.guild.id)
+                .then(resp => {
+                    logger.debug('~!db resp:');
+                    logger.debug('resp = ' + resp[0].a);
+                    msg.channel.send('I have **' + resp[0].a + '** messages from this server stored in the ship\'s memory banks.');
+                })
+                .catch(err => {
+                    logger.err(err)
+                });
+            return;
+        } else if (msg.mentions.members.firstKey()) {
             author = msg.mentions.members.firstKey();
             order_by = 'rand()';
         } else if (args[1] == 'rand' || args[1] == 'random') {
@@ -136,8 +149,8 @@ client.on('message', msg => {
                     } else {
                         resp_author = resp_author.user.username;
                     }
-                    msg.channel.send('db_id(' + resp[0].db_id + '),author(' + resp_author + 
-                    '): ' + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
+                    msg.channel.send('db_id(' + resp[0].db_id + '),author(' + resp_author +
+                        '): ' + resp[0].body.replace(regex_m, '').replace(regex_w, '').trim());
                 } else {
                     msg.channel.send('Invalid db_id. \:shrug:');
                 }
