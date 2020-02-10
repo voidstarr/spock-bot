@@ -24,3 +24,14 @@ CREATE TABLE IF NOT EXISTS spock_bot.direct_messages (
 )
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_bin;
+
+CREATE TABLE IF NOT EXISTS spock_bot.users (
+    db_id INT NOT NULL AUTO_INCREMENT,
+    id BIGINT UNSIGNED,
+    username VARCHAR(32),
+    discriminator VARCHAR(32),
+    PRIMARY KEY ( db_id )
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_bin;
+
